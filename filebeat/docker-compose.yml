@@ -14,7 +14,7 @@ services:
       # 将log文件覆盖到容器中，在 filebeat.docker.yml 通过 Input 类型 log 中读取
       - type: bind
         source: ./apache_logs.txt
-        target: /usr/share/filebeat/apache_logs_5.txt
+        target: /usr/share/filebeat/apache_logs_1.txt
         read_only: true
     environment:
       - bootstrap.memory_lock=true
