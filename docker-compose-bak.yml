@@ -1,0 +1,133 @@
+version: '2.2'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./elastic/elastic.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./elastic/elastic.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+    networks:
+      - elastic
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./elastic/elastic.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+    networks:
+      - elastic
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.14.0
+    ports: ["5601:5601"]
+    networks: ['elastic']
+    # environment:
+      # SERVER_NAME: kibana.example.org
+      # ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
+      # ELASTICSEARCH_HOSTS: '["http://localhost:9200"]'
+    volumes:
+      - type: bind
+        source: ./kibana/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+        read_only: true
+    # 依赖 es01-es03 镜像启动后再启动 kibana
+    depends_on:
+      - es01
+      - es02
+      - es03
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.14.0
+    volumes:
+      - type: bind
+        source: ./filebeat/filebeat.docker.yml
+        target: /usr/share/filebeat/filebeat.yml
+        read_only: true
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    depends_on:
+      - es01
+      - es02
+      - es03
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.14.0
+    volumes:
+      - type: bind
+        source: ./logstash/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    depends_on:
+      - es01
+      - es02
+      - es03
+      - filebeat
+          
+
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

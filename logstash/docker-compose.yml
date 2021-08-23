@@ -1,0 +1,28 @@
+version: '2.2'
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.14.0
+    container_name: logstash
+    ports: ["5044:5044"]
+    # 需要与 elk/kibana 的容器处于同一个网络下，才可以通信
+    networks: 
+      - elk_elastic
+    volumes:
+      # 覆盖容器中 logstash.yml 配置
+      - type: bind
+        source: ./logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      # 写入conf文档，在 logstash.yml 中读取运行
+      - type: bind
+        source: ./apache.conf
+        target: /usr/share/logstash/config/apache.conf
+        read_only: true
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+networks:
+  # 定义网络为 external，避免重复创建网络
+  elk_elastic:
+    external: true

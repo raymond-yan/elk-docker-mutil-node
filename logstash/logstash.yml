@@ -1,0 +1,2 @@
+monitoring.enabled: false
+path.config: '/usr/share/logstash/config/apache.conf'

@@ -1,0 +1,30 @@
+version: '2.2'
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.14.0
+    # 需要与 elk/kibana 的容器处于同一个网络下，才可以通信
+    networks: 
+      - elk_elastic
+    volumes:
+      # 覆盖容器中的默认配置
+      - type: bind
+        source: ./filebeat.docker.yml
+        target: /usr/share/filebeat/filebeat.yml
+        read_only: true
+      # 将log文件覆盖到容器中，在 filebeat.docker.yml 通过 Input 类型 log 中读取
+      - type: bind
+        source: ./apache_logs.txt
+        target: /usr/share/filebeat/apache_logs_5.txt
+        read_only: true
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    depends_on:
+      - es01
+      - es02
+      - es03
+
+networks:
+  # 定义网络为 external，避免重复创建网络
+  elk_elastic:
+    external: true

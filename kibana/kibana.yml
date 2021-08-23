@@ -1,0 +1,9 @@
+# Default Kibana configuration for docker target
+server.host: "0"
+server.shutdownTimeout: "5s"
+monitoring.ui.container.elasticsearch.enabled: true
+
+# 定义elastic的 Node 节点，用于获取数据
+elasticsearch.hosts: ["http://es01:9200","http://es02:9200","http://es03:9200"]
+
+i18n.locale: "zh-CN"

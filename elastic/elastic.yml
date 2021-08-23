@@ -1,0 +1,10 @@
+
+# Default Elastic configuration for docker target
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+
+
+# License, basic 代表 free 及 开源的项目(非必要)
+xpack.license.self_generated.type: basic
+# Monitoring 开启监控, 可通过 Stack Monitoring 查看运行状态
+xpack.monitoring.collection.enabled: true
