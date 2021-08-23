@@ -1,4 +1,4 @@
-## ELK Stack 7.14.0 版本通过Docker的多节点部署 (Elasticsearch、Kibana、Logstash、Fiebeat)
+## ELK Stack 通过Docker的多节点部署 (Elasticsearch、Kibana、Logstash、Fiebeat) - 7.14.0 版本
 
 ### 简介
 
